@@ -1,0 +1,86 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+
+export default function LoginPage() {
+    const router = useRouter();
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [error, setError] = useState("");
+    const [loading, setLoading] = useState(false);
+
+    async function handleSubmit(e: React.FormEvent) {
+        e.preventDefault();
+        setError("");
+        setLoading(true);
+
+        try {
+            const res = await fetch("/api/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email, password }),
+            });
+
+            const data = await res.json().catch(() => ({}));
+
+            if (!res.ok) {
+                setError(data.error || "อีเมลหรือรหัสผ่านไม่ถูกต้อง");
+                setLoading(false);
+                return;
+            }
+
+            router.push("/dashboard");
+            router.refresh();
+        } catch (err) {
+            setError("เกิดข้อผิดพลาดในการเชื่อมต่อ กรุณาลองใหม่อีกครั้ง");
+            setLoading(false);
+        }
+    }
+
+    return (
+        <main className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+            <form onSubmit={handleSubmit} className="w-full max-w-md bg-white p-6 rounded-lg shadow-md space-y-4 border border-gray-200">
+                <h2 className="text-2xl font-bold text-gray-800 text-center mb-6">เข้าสู่ระบบ</h2>
+
+                <div>
+                    <label className="block text-sm font-medium mb-1 text-gray-700">อีเมล</label>
+                    <input
+                        type="email"
+                        required
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="admin@tsu.ac.th"
+                        className="border border-gray-300 p-2 w-full rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800"
+                    />
+                </div>
+
+                <div>
+                    <label className="block text-sm font-medium mb-1 text-gray-700">รหัสผ่าน</label>
+                    <input
+                        type="password"
+                        required
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        placeholder="อย่างน้อย 6 ตัวอักษร"
+                        className="border border-gray-300 p-2 w-full rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800"
+                    />
+                </div>
+
+                {error && (
+                    <div className="p-3 bg-red-50 border border-red-200 text-red-600 text-sm rounded text-center">
+                        {error}
+                    </div>
+                )}
+
+                <button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full p-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded transition duration-200 disabled:opacity-50 cursor-pointer"
+                >
+                    {loading ? "กำลังเข้าสู่ระบบ..." : "เข้าสู่ระบบ"}
+                </button>
+            </form>
+        </main>
+    );
+}
