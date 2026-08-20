@@ -1,26 +1,42 @@
 import * as MessageModel from "./messages";
-export function createMessage(data: {
-  name: string;
-  email: string;
-  message: string;
-}) {
-  if (!data.name || !data.email || !data.message) {
+import { Prisma } from "../generated/prisma/client";
+
+export async function createMessage(data: { name: string; email: string; message: string }) {
+  if (!data.name || !data.email || !data.message)
     throw new Error("ข้อมูลไม่ครบ");
+  try {
+    return await MessageModel.addMessage(data);
+  } catch (err) {
+    if (
+      err instanceof Prisma.PrismaClientKnownRequestError &&
+      err.code === "P2002"
+    ) {
+      throw new Error("อีเมลนี้ถูกใช้แล้ว");
+    }
+    throw err;
   }
-  return MessageModel.addMessage(data);
 }
-export function listMessages() {
+export async function listMessages() {
   return MessageModel.getMessages();
 }
-export function getMessageById(id: string) {
-  return MessageModel.getMessages().find((m) => m.id === id) ?? null;
+
+export async function getMessageById(id: string) {
+  const messages = await MessageModel.getMessages();
+  return messages.find((m) => m.id === id) ?? null;
 }
 
-export function editMessage(id: string, updates: Partial<{ message: string }>) {
-  if (updates.message !== undefined && updates.message.trim() === "") {
-    throw new Error("ข้อความห้ามเป็นค่าว่าง");
+export async function editMessage(id: string, updates: object) {
+  try {
+    return await MessageModel.updateMessage(id, updates);
+  } catch (err) {
+    if (
+      err instanceof Prisma.PrismaClientKnownRequestError &&
+      err.code === "P2025"
+    ) {
+      return null; // ให้Controller เดิมตอบ 404 เหมือน Week 8
+    }
+    throw err;
   }
-  return MessageModel.updateMessage(id, updates);
 }
 
 export function removeMessage(id: string) {

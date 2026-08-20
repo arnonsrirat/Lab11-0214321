@@ -3,6 +3,7 @@ import Link from "next/link";
 import { cookies } from "next/headers";
 import { AlertCircle, ChevronLeft } from "lucide-react";
 import PostCommentsSection from "@/components/PostCommentsSection";
+import BookmarkButton from "@/components/BookmarkButton";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -94,6 +95,8 @@ export default async function PostDetail({ params }: Props) {
             <span>•</span>
             <span>Category: Computer Science</span>
           </div>
+
+          <BookmarkButton url={`/posts/${id}`} title={post.title} />
         </header>
 
         <section className="mt-8 text-slate-600 dark:text-slate-350 text-sm sm:text-base leading-relaxed space-y-4">

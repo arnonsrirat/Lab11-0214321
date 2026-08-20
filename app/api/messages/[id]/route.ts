@@ -8,7 +8,7 @@ export async function GET(
     { params }: { params: Promise<{ id: string }> }
 ) {
     const { id } = await params;
-    const message = getMessageById(id);
+    const message = await getMessageById(id);
     if (!message) {
         return Response.json({ error: 'ไม่พบข้อความนี้' }, { status: 404 });
     }
@@ -22,7 +22,7 @@ export async function PATCH(
 ) {
  const { id } = await params;
  const updates = await request.json();
- const updated = editMessage(id, updates);
+ const updated = await editMessage(id, updates);
  if (!updated) {
  return Response.json({ error: 'ไม่พบข้อความนี้' }, { status: 404 });
  }

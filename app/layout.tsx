@@ -47,6 +47,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 <Link href="/courses" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
                   คอร์สเรียน
                 </Link>
+                <Link href="/bookmarks" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+                  บุ๊กมาร์ก
+                </Link>
                 <Link href="/users" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
                   ผู้ใช้
                 </Link>
@@ -70,6 +73,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 </Link>
                 <Link href="/courses" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
                   คอร์ส
+                </Link>
+                <Link href="/bookmarks" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+                  บุ๊กมาร์ก
                 </Link>
                 <Link href="/users" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
                   ผู้ใช้

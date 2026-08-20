@@ -1,0 +1,25 @@
+generator client {
+ provider = "prisma-client"
+ output   = "../generated/prisma"
+}
+
+
+datasource db {
+ provider = "postgresql"
+}
+
+model Message {
+ id String @id @default(cuid())
+ name String
+ email String @unique
+ message String
+ createdAt DateTime @default(now())
+}
+
+model Bookmark {
+ id String @id @default(cuid())
+ url String @unique
+ title String
+ note String?
+ createdAt DateTime @default(now())
+}

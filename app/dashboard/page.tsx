@@ -3,8 +3,8 @@ import LogoutButton from "./LogoutButton";
 
 export const dynamic = "force-dynamic";
 
-export default function DashboardPage() {
-    const messages = getMessages();
+export default async function DashboardPage() {
+    const messages = await getMessages();
 
     return (
         <main className="max-w-4xl mx-auto p-8 space-y-6">
