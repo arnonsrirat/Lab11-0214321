@@ -1,9 +1,19 @@
 import { NextResponse } from "next/server";
-import { reactToComment, type CommentReaction } from "@/lib/comments";
+import { getCommentById, reactToComment, type CommentReaction } from "@/lib/comments";
 
 type Context = { params: Promise<{ id: string }> };
 
 const allowedReactions = new Set<CommentReaction>(["like", "heart"]);
+
+export async function GET(_request: Request, context: Context) {
+  const { id } = await context.params;
+  const comment = getCommentById(id);
+  if (!comment) {
+    return NextResponse.json({ error: "Comment not found" }, { status: 404 });
+  }
+
+  return NextResponse.json({ reactions: comment.reactions });
+}
 
 export async function POST(request: Request, context: Context) {
   const { id } = await context.params;
