@@ -101,7 +101,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
           {/* Footer */}
           <footer className="text-center py-8 text-slate-400 dark:text-slate-500 text-xs border-t border-slate-200/50 dark:border-slate-800/50 mt-12 bg-white/20 dark:bg-slate-900/20 backdrop-blur-sm">
-            <p className="font-semibold text-slate-500 dark:text-slate-400">© 2026 My Blog — สร้างด้วย Next.js + TypeScript</p>
+            <p className="font-semibold text-slate-500 dark:text-slate-400">© 2026 My Blog — สร้างด้วย Next.js + TypeScript · Preview Verification</p>
             <p className="mt-2 text-slate-400 dark:text-slate-500">0214321 Web App Design & Development • CIS Year 3</p>
           </footer>
         </div>
