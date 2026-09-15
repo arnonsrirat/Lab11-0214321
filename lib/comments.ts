@@ -42,6 +42,10 @@ export function getCommentsByPostId(postId: string): CommentItem[] {
   return comments.filter((c) => c.postId === postId);
 }
 
+export function getCommentById(commentId: string): CommentItem | null {
+  return comments.find((comment) => comment.id === commentId) ?? null;
+}
+
 export function addComment(data: Omit<CommentItem, "id" | "createdAt" | "reactions">): CommentItem {
   const newComment: CommentItem = {
     id: `comment-${Date.now()}`,
