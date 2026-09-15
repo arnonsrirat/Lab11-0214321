@@ -1,5 +1,6 @@
 import { getMessages } from "@/lib/messages";
 import LogoutButton from "./LogoutButton";
+import ChangePasswordForm from "@/components/ChangePasswordForm";
 
 export const dynamic = "force-dynamic";
 
@@ -43,6 +44,8 @@ export default async function DashboardPage() {
                     ยังไม่มีข้อความติดต่อในระบบ
                 </div>
             )}
+
+            <ChangePasswordForm />
         </main>
     );
 }

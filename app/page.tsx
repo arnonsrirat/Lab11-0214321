@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import LikeButton from "../components/LikeButton";
+import { getPosts as getCustomPosts } from "@/lib/posts";
 import {
   Terminal,
   ArrowRight,
@@ -22,16 +23,44 @@ interface Post {
   body: string;
 }
 
-async function getRecentPosts(): Promise<Post[]> {
+interface RecentPost {
+  id: string;
+  title: string;
+  excerpt: string;
+  badge: string;
+  isUserPost: boolean;
+}
+
+async function getRecentPosts(limit: number): Promise<Post[]> {
+  if (limit <= 0) return [];
   const res = await fetch(
-    "https://jsonplaceholder.typicode.com/posts?_limit=3",
+    `https://jsonplaceholder.typicode.com/posts?_limit=${limit}`,
     { cache: "no-store" }
   );
   return res.json();
 }
 
 export default async function Home() {
-  const posts: Post[] = await getRecentPosts();
+  // บทความที่สมาชิกสร้างเอง (User Posts) ต้องแสดงในหน้าแรกด้วย ไม่ใช่แค่ /posts
+  const customPosts = getCustomPosts();
+  const userRecent: RecentPost[] = customPosts.slice(0, 3).map((p) => ({
+    id: p.id,
+    title: p.title,
+    excerpt: p.content,
+    badge: "User Post",
+    isUserPost: true,
+  }));
+
+  const apiPosts = await getRecentPosts(3 - userRecent.length);
+  const apiRecent: RecentPost[] = apiPosts.map((p) => ({
+    id: String(p.id),
+    title: p.title,
+    excerpt: p.body,
+    badge: `Post #${p.id}`,
+    isUserPost: false,
+  }));
+
+  const posts: RecentPost[] = [...userRecent, ...apiRecent];
 
   return (
     <div className="space-y-8 animate-fade-in">
@@ -256,21 +285,25 @@ export default async function Home() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {posts.map((post: Post) => (
+          {posts.map((post) => (
             <Link
               key={post.id}
               href={`/posts/${post.id}`}
-              className="group glass-panel p-6 rounded-3xl flex flex-col justify-between min-h-[180px] border border-slate-200/50 dark:border-slate-800/50 transform hover:-translate-y-1 transition-all duration-300"
+              className={`group glass-panel p-6 rounded-3xl flex flex-col justify-between min-h-[180px] transform hover:-translate-y-1 transition-all duration-300 ${
+                post.isUserPost
+                  ? "border border-indigo-500/30 dark:border-indigo-400/30 bg-indigo-50/20 dark:bg-indigo-950/10"
+                  : "border border-slate-200/50 dark:border-slate-800/50"
+              }`}
             >
               <div>
                 <span className="text-[10px] font-mono text-indigo-500/80 dark:text-indigo-400 bg-indigo-500/5 dark:bg-indigo-400/5 px-2.5 py-1 rounded-full border border-indigo-500/10 dark:border-indigo-400/10">
-                  Post #{post.id}
+                  {post.badge}
                 </span>
                 <h3 className="font-extrabold text-slate-800 dark:text-slate-100 mt-3 line-clamp-2 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
                   {post.title}
                 </h3>
                 <p className="text-slate-500 dark:text-slate-400 text-xs mt-2 line-clamp-3 leading-relaxed">
-                  {post.body}
+                  {post.excerpt}
                 </p>
               </div>
               <div className="mt-4 text-xs font-bold text-indigo-600 dark:text-indigo-400 group-hover:translate-x-1.5 transition-transform flex items-center gap-1">

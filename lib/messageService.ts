@@ -1,9 +1,17 @@
 import * as MessageModel from "./messages";
 import { Prisma } from "../generated/prisma/client";
+import { ZodError } from "zod";
+import { messageSchema, messageUpdateSchema } from "./schemas";
+import { NotFoundError, ValidationError, ForbiddenError } from "./errors";
 
-export async function createMessage(data: { name: string; email: string; message: string }) {
-  if (!data.name || !data.email || !data.message)
-    throw new Error("ข้อมูลไม่ครบ");
+export async function createMessage(raw: unknown) {
+  let data;
+  try {
+    data = messageSchema.parse(raw);
+  } catch (err) {
+    if (err instanceof ZodError) throw new ValidationError(err.issues[0].message);
+    throw err;
+  }
   try {
     return await MessageModel.addMessage(data);
   } catch (err) {
@@ -11,7 +19,7 @@ export async function createMessage(data: { name: string; email: string; message
       err instanceof Prisma.PrismaClientKnownRequestError &&
       err.code === "P2002"
     ) {
-      throw new Error("อีเมลนี้ถูกใช้แล้ว");
+      throw new ValidationError("อีเมลนี้ถูกใช้แล้ว");
     }
     throw err;
   }
@@ -21,24 +29,32 @@ export async function listMessages() {
 }
 
 export async function getMessageById(id: string) {
-  const messages = await MessageModel.getMessages();
-  return messages.find((m) => m.id === id) ?? null;
+  const message = await MessageModel.getMessageById(id);
+  if (!message) throw new NotFoundError("ไม่พบข้อความนี้");
+  return message;
 }
 
-export async function editMessage(id: string, updates: object) {
+export async function editMessage(id: string, updates: unknown, sessionUserId: string) {
+  const message = await getMessageById(id);
+  if (message.authorId !== sessionUserId) {
+    throw new ForbiddenError("คุณไม่มีสิทธิ์แก้ไขข้อความนี้");
+  }
+
+  let data;
   try {
-    return await MessageModel.updateMessage(id, updates);
+    data = messageUpdateSchema.parse(updates);
   } catch (err) {
-    if (
-      err instanceof Prisma.PrismaClientKnownRequestError &&
-      err.code === "P2025"
-    ) {
-      return null; // ให้Controller เดิมตอบ 404 เหมือน Week 8
-    }
+    if (err instanceof ZodError) throw new ValidationError(err.issues[0].message);
     throw err;
   }
+
+  return MessageModel.updateMessage(id, data);
 }
 
-export function removeMessage(id: string) {
+export async function removeMessage(id: string, sessionUserId: string) {
+  const message = await getMessageById(id);
+  if (message.authorId !== sessionUserId) {
+    throw new ForbiddenError("คุณไม่มีสิทธิ์ลบข้อความนี้");
+  }
   return MessageModel.deleteMessage(id);
 }

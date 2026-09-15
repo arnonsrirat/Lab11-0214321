@@ -70,6 +70,7 @@ body {
   content: "";
   position: absolute;
   inset: 0;
+  z-index: 0;
   background: radial-gradient(circle at 50% 50%, transparent 20%, var(--background) 90%);
   pointer-events: none;
 }

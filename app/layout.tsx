@@ -32,7 +32,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <div className="absolute top-[-10%] left-[-10%] w-[50vw] h-[50vw] rounded-full bg-indigo-400/10 dark:bg-indigo-500/5 blur-[120px] pointer-events-none" />
         <div className="absolute top-[40%] right-[-10%] w-[45vw] h-[45vw] rounded-full bg-blue-400/10 dark:bg-purple-500/5 blur-[120px] pointer-events-none" />
 
-        <div className="relative flex flex-col min-h-screen">
+        <div className="relative z-10 flex flex-col min-h-screen">
           {/* Glassmorphism Sticky Navbar */}
           <nav className="sticky top-0 z-50 glass-panel border-b border-slate-200/50 dark:border-slate-800/50 backdrop-blur-md px-6 py-4 flex items-center justify-between shadow-sm">
             <div className="flex items-center gap-6">

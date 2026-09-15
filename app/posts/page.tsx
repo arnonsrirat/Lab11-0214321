@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { BookText, ChevronRight, PlusCircle, Sparkles } from "lucide-react";
+import { BookText, ChevronRight, PlusCircle, Search, Sparkles } from "lucide-react";
 import { getPosts as getCustomPosts } from "@/lib/posts";
 
 export const metadata: Metadata = {
@@ -15,16 +15,36 @@ interface Post {
   userId: number;
 }
 
-export default async function PostsPage() {
-  // ดึงข้อมูลบทความจาก JSONPlaceholder API
-  const res = await fetch("https://jsonplaceholder.typicode.com/posts?_limit=8", {
-    cache: "no-store",
-  });
+type Props = {
+  searchParams: Promise<{ q?: string }>;
+};
+
+export default async function PostsPage({ searchParams }: Props) {
+  const { q } = await searchParams;
+  const query = (q ?? "").trim().toLowerCase();
+
+  // ดึงข้อมูลบทความจาก JSONPlaceholder API (ถ้ามีการค้นหา ดึงมาให้มากพอที่จะค้นเจอ)
+  const res = await fetch(
+    `https://jsonplaceholder.typicode.com/posts?_limit=${query ? 100 : 8}`,
+    { cache: "no-store" }
+  );
   if (!res.ok) throw new Error("โหลดข้อมูลไม่สำเร็จ");
-  const apiPosts: Post[] = await res.json();
+  const allApiPosts: Post[] = await res.json();
 
   // ดึงข้อมูลบทความใหม่ที่สร้างผ่าน Model (lib/posts.ts)
-  const customPosts = getCustomPosts();
+  const allCustomPosts = getCustomPosts();
+
+  const apiPosts = query
+    ? allApiPosts.filter((p) => p.title.toLowerCase().includes(query))
+    : allApiPosts;
+  const customPosts = query
+    ? allCustomPosts.filter(
+        (p) =>
+          p.title.toLowerCase().includes(query) ||
+          p.content.toLowerCase().includes(query)
+      )
+    : allCustomPosts;
+  const noResults = query && apiPosts.length === 0 && customPosts.length === 0;
 
   return (
     <div className="max-w-3xl mx-auto space-y-6 animate-fade-in py-6">
@@ -50,6 +70,40 @@ export default async function PostsPage() {
         </Link>
       </div>
 
+      {/* Search Box */}
+      <form action="/posts" method="GET" className="flex gap-2">
+        <div className="relative flex-1">
+          <Search className="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+          <input
+            type="text"
+            name="q"
+            defaultValue={q ?? ""}
+            placeholder="ค้นหาบทความจากหัวข้อหรือเนื้อหา..."
+            className="w-full pl-11 pr-4 py-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+          />
+        </div>
+        <button
+          type="submit"
+          className="px-5 py-3 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-2xl transition cursor-pointer"
+        >
+          ค้นหา
+        </button>
+        {query && (
+          <Link
+            href="/posts"
+            className="px-4 py-3 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-sm font-bold rounded-2xl transition hover:bg-slate-200 dark:hover:bg-slate-700 flex items-center"
+          >
+            ล้าง
+          </Link>
+        )}
+      </form>
+
+      {noResults && (
+        <div className="text-center p-8 border rounded-2xl bg-slate-50 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400 text-sm">
+          ไม่พบบทความที่ตรงกับ &quot;{q}&quot;
+        </div>
+      )}
+
       {/* Section 1: User Created Custom Posts */}
       {customPosts.length > 0 && (
         <div className="space-y-3">
@@ -59,9 +113,10 @@ export default async function PostsPage() {
           </h2>
           <div className="grid grid-cols-1 gap-4">
             {customPosts.map((post) => (
-              <div
+              <Link
                 key={post.id}
-                className="glass-panel p-6 rounded-3xl border border-indigo-500/30 dark:border-indigo-400/30 bg-indigo-50/20 dark:bg-indigo-950/10 block transition-all"
+                href={`/posts/${post.id}`}
+                className="group glass-panel p-6 rounded-3xl border border-indigo-500/30 dark:border-indigo-400/30 bg-indigo-50/20 dark:bg-indigo-950/10 block transition-all hover:-translate-y-0.5 hover:shadow-sm"
               >
                 <div className="flex justify-between items-center mb-2">
                   <span className="text-[10px] font-mono text-indigo-600 dark:text-indigo-400 bg-indigo-500/10 px-2.5 py-1 rounded-full font-bold">
@@ -71,23 +126,24 @@ export default async function PostsPage() {
                     {new Date(post.createdAt).toLocaleDateString()}
                   </span>
                 </div>
-                <h3 className="text-lg font-extrabold text-slate-800 dark:text-slate-100 mb-2">
+                <h3 className="text-lg font-extrabold text-slate-800 dark:text-slate-100 mb-2 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
                   {post.title}
                 </h3>
-                <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed whitespace-pre-wrap">
+                <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed line-clamp-3 whitespace-pre-wrap">
                   {post.content}
                 </p>
                 <div className="mt-4 pt-3 border-t border-slate-200/50 dark:border-slate-800/50 flex justify-between items-center text-xs text-slate-400 font-mono">
                   <span>โดย: {post.author}</span>
                   <span className="text-indigo-500 font-bold">User Post</span>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         </div>
       )}
 
       {/* Section 2: External Aggregated Posts */}
+      {apiPosts.length > 0 && (
       <div className="space-y-3 pt-4">
         <h2 className="text-sm font-mono font-bold text-slate-500 dark:text-slate-400">
           // บทความภายนอก (External Aggregated)
@@ -116,6 +172,7 @@ export default async function PostsPage() {
           ))}
         </div>
       </div>
+      )}
     </div>
   );
 }

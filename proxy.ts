@@ -26,6 +26,8 @@ export const config = {
     "/dashboard",
     "/dashboard/:path*",
     "/posts/create",
+    "/posts/:id/edit",
     "/api/comments",
+    "/api/change-password",
   ],
 };

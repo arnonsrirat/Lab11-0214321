@@ -4,14 +4,28 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Send, Eye, Edit3, CheckCircle2, AlertCircle, RefreshCw } from "lucide-react";
 
-export default function CreatePostForm() {
+interface InitialPost {
+  title: string;
+  category: string;
+  author: string;
+  content: string;
+}
+
+interface CreatePostFormProps {
+  mode?: "create" | "edit";
+  postId?: string;
+  initialPost?: InitialPost;
+}
+
+export default function CreatePostForm({ mode = "create", postId, initialPost }: CreatePostFormProps) {
   const router = useRouter();
+  const isEdit = mode === "edit";
 
   // 1. Task W.1: Controlled Form States
-  const [title, setTitle] = useState("");
-  const [category, setCategory] = useState("");
-  const [author, setAuthor] = useState("admin@tsu.ac.th");
-  const [content, setContent] = useState("");
+  const [title, setTitle] = useState(initialPost?.title ?? "");
+  const [category, setCategory] = useState(initialPost?.category ?? "");
+  const [author, setAuthor] = useState(initialPost?.author ?? "admin@tsu.ac.th");
+  const [content, setContent] = useState(initialPost?.content ?? "");
   
   // States สำหรับควบคุม UI และ Validation
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -60,8 +74,8 @@ export default function CreatePostForm() {
     setIsSubmitting(true);
 
     try {
-      const res = await fetch("/api/posts", {
-        method: "POST",
+      const res = await fetch(isEdit ? `/api/posts/${postId}` : "/api/posts", {
+        method: isEdit ? "PATCH" : "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ title, category, author, content }),
       });
@@ -72,24 +86,26 @@ export default function CreatePostForm() {
         if (data.details) {
           setErrors(data.details); // Error จาก Server Validation
         }
-        setServerError(data.error || "ไม่สามารถสร้างบทความได้");
+        setServerError(data.error || (isEdit ? "ไม่สามารถแก้ไขบทความได้" : "ไม่สามารถสร้างบทความได้"));
         setIsSubmitting(false);
         return;
       }
 
       // สำเร็จ
-      setSuccessMessage("สร้างบทความใหม่เรียบร้อยแล้ว!");
+      setSuccessMessage(isEdit ? "บันทึกการแก้ไขเรียบร้อยแล้ว!" : "สร้างบทความใหม่เรียบร้อยแล้ว!");
       setIsSubmitting(false);
 
-      // รีเซ็ตฟอร์ม
-      setTitle("");
-      setCategory("");
-      setContent("");
+      if (!isEdit) {
+        // รีเซ็ตฟอร์มเฉพาะตอนสร้างใหม่
+        setTitle("");
+        setCategory("");
+        setContent("");
+      }
       setErrors({});
 
-      // นำทางไปหน้ารายการบทความหลังจากนั้น 1.5 วินาที
+      // นำทางไปหน้าบทความหลังจากนั้น 1.5 วินาที
       setTimeout(() => {
-        router.push("/posts");
+        router.push(isEdit ? `/posts/${postId}` : "/posts");
         router.refresh();
       }, 1500);
     } catch (err) {
@@ -99,9 +115,9 @@ export default function CreatePostForm() {
   }
 
   function handleReset() {
-    setTitle("");
-    setCategory("");
-    setContent("");
+    setTitle(initialPost?.title ?? "");
+    setCategory(initialPost?.category ?? "");
+    setContent(initialPost?.content ?? "");
     setErrors({});
     setServerError("");
     setSuccessMessage("");
@@ -282,7 +298,9 @@ export default function CreatePostForm() {
             className="w-full py-3.5 px-6 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl transition duration-200 flex items-center justify-center gap-2 shadow-md hover:shadow-indigo-500/20 disabled:opacity-50 cursor-pointer"
           >
             <Send className="w-4 h-4" />
-            {isSubmitting ? "กำลังเผยแพร่บทความ..." : "เผยแพร่บทความ (Submit)"}
+            {isEdit
+              ? isSubmitting ? "กำลังบันทึก..." : "บันทึกการแก้ไข"
+              : isSubmitting ? "กำลังเผยแพร่บทความ..." : "เผยแพร่บทความ (Submit)"}
           </button>
         </form>
       ) : (
