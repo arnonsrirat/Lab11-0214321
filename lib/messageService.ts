@@ -24,9 +24,16 @@ export async function createMessage(raw: unknown) {
     throw err;
   }
 }
-// Main branch keeps the message list API intentionally simple for this exercise.
-export async function listMessages() {
-  return MessageModel.getMessages();
+// Keep the main-branch note and include the search behavior from the feature branch.
+export async function listMessages(search?: string) {
+  const all = await MessageModel.getMessages();
+  const term = search?.trim();
+  if (!term) return all;
+
+  return all.filter(
+    (message) =>
+      message.name.includes(term) || message.message.includes(term),
+  );
 }
 
 export async function getMessageById(id: string) {
