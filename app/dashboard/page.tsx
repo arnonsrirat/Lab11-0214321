@@ -34,7 +34,10 @@ export default async function DashboardPage() {
                                     <span className="font-semibold text-gray-800">{msg.name} ({msg.email})</span>
                                     <span className="text-xs text-gray-400">{new Date(msg.createdAt).toLocaleString()}</span>
                                 </div>
-                                <p className="text-gray-600 text-sm">{msg.message}</p>
+                                <div className="flex items-center gap-2">
+                                    <span className="text-xs rounded bg-blue-100 px-2 py-1 text-blue-700">{msg.tag}</span>
+                                    <p className="text-gray-600 text-sm">{msg.message}</p>
+                                </div>
                             </div>
                         ))}
                     </div>

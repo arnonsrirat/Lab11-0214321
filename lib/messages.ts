@@ -24,6 +24,7 @@ export async function addMessage(data: {
   name: string;
   email: string;
   message: string;
+  tag: string;
 }) {
   return prisma.message.create({ data });
 }
