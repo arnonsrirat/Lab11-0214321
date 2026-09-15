@@ -2,6 +2,7 @@
 
 import { CommentItem } from "@/lib/comments";
 import { Heart, MessageSquare, Star, ThumbsUp, User } from "lucide-react";
+import { useState } from "react";
 
 interface CommentListProps {
   comments: CommentItem[];
@@ -10,6 +11,18 @@ interface CommentListProps {
 }
 
 export default function CommentList({ comments, isLoading, onReact }: CommentListProps) {
+  const [pendingReaction, setPendingReaction] = useState<string | null>(null);
+
+  async function handleReact(commentId: string, reaction: "like" | "heart") {
+    if (!onReact || pendingReaction) return;
+    setPendingReaction(`${commentId}:${reaction}`);
+    try {
+      await onReact(commentId, reaction);
+    } finally {
+      setPendingReaction(null);
+    }
+  }
+
   if (isLoading) {
     return (
       <div className="py-8 text-center text-xs font-mono text-slate-400 animate-pulse">
@@ -79,21 +92,23 @@ export default function CommentList({ comments, isLoading, onReact }: CommentLis
             <div className="pl-10 flex items-center gap-2 pt-1">
               <button
                 type="button"
-                onClick={() => onReact?.(c.id, "like")}
+                onClick={() => handleReact(c.id, "like")}
+                disabled={pendingReaction !== null}
                 className="inline-flex items-center gap-1 rounded-full border border-slate-200 px-2.5 py-1 text-xs text-slate-500 transition hover:border-indigo-300 hover:text-indigo-600 dark:border-slate-700"
                 aria-label="ถูกใจความคิดเห็น"
               >
                 <ThumbsUp className="h-3.5 w-3.5" />
-                <span>{c.reactions.like}</span>
+                <span aria-live="polite">{c.reactions.like}</span>
               </button>
               <button
                 type="button"
-                onClick={() => onReact?.(c.id, "heart")}
+                onClick={() => handleReact(c.id, "heart")}
+                disabled={pendingReaction !== null}
                 className="inline-flex items-center gap-1 rounded-full border border-slate-200 px-2.5 py-1 text-xs text-slate-500 transition hover:border-rose-300 hover:text-rose-600 dark:border-slate-700"
                 aria-label="รักความคิดเห็น"
               >
                 <Heart className="h-3.5 w-3.5" />
-                <span>{c.reactions.heart}</span>
+                <span aria-live="polite">{c.reactions.heart}</span>
               </button>
             </div>
           </div>
