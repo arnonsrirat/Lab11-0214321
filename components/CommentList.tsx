@@ -1,14 +1,15 @@
 "use client";
 
 import { CommentItem } from "@/lib/comments";
-import { MessageSquare, Star, User } from "lucide-react";
+import { Heart, MessageSquare, Star, ThumbsUp, User } from "lucide-react";
 
 interface CommentListProps {
   comments: CommentItem[];
   isLoading?: boolean;
+  onReact?: (commentId: string, reaction: "like" | "heart") => Promise<void>;
 }
 
-export default function CommentList({ comments, isLoading }: CommentListProps) {
+export default function CommentList({ comments, isLoading, onReact }: CommentListProps) {
   if (isLoading) {
     return (
       <div className="py-8 text-center text-xs font-mono text-slate-400 animate-pulse">
@@ -74,6 +75,27 @@ export default function CommentList({ comments, isLoading }: CommentListProps) {
             <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-350 leading-relaxed pl-10">
               {c.comment}
             </p>
+
+            <div className="pl-10 flex items-center gap-2 pt-1">
+              <button
+                type="button"
+                onClick={() => onReact?.(c.id, "like")}
+                className="inline-flex items-center gap-1 rounded-full border border-slate-200 px-2.5 py-1 text-xs text-slate-500 transition hover:border-indigo-300 hover:text-indigo-600 dark:border-slate-700"
+                aria-label="ถูกใจความคิดเห็น"
+              >
+                <ThumbsUp className="h-3.5 w-3.5" />
+                <span>{c.reactions.like}</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => onReact?.(c.id, "heart")}
+                className="inline-flex items-center gap-1 rounded-full border border-slate-200 px-2.5 py-1 text-xs text-slate-500 transition hover:border-rose-300 hover:text-rose-600 dark:border-slate-700"
+                aria-label="รักความคิดเห็น"
+              >
+                <Heart className="h-3.5 w-3.5" />
+                <span>{c.reactions.heart}</span>
+              </button>
+            </div>
           </div>
         ))}
       </div>

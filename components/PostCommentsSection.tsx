@@ -31,6 +31,16 @@ export default function PostCommentsSection({ postId, isLoggedIn }: PostComments
     }
   }, [postId]);
 
+  const reactToComment = useCallback(async (commentId: string, reaction: "like" | "heart") => {
+    const response = await fetch(`/api/comments/${commentId}/reactions`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ reaction }),
+    });
+
+    if (response.ok) await fetchComments();
+  }, [fetchComments]);
+
   useEffect(() => {
     fetchComments();
   }, [fetchComments]);
@@ -66,7 +76,7 @@ export default function PostCommentsSection({ postId, isLoggedIn }: PostComments
       )}
 
       {/* Comment List */}
-      <CommentList comments={comments} isLoading={isLoading} />
+      <CommentList comments={comments} isLoading={isLoading} onReact={reactToComment} />
     </section>
   );
 }

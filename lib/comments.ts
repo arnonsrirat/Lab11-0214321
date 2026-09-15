@@ -6,6 +6,7 @@ export interface CommentItem {
   author: string;
   rating: number;
   comment: string;
+  reactions: { like: number; heart: number };
   createdAt: string;
 }
 
@@ -22,6 +23,7 @@ if (!globalForComments.comments) {
       postId: "1",
       author: "admin@tsu.ac.th",
       rating: 5,
+      reactions: { like: 0, heart: 0 },
       comment: "บทความนี้มีประโยชน์มากครับ อธิบายแนวคิดและ REST API ได้เข้าใจง่ายดีเยี่ยม",
       createdAt: new Date(Date.now() - 3600000).toISOString(),
     },
@@ -34,10 +36,11 @@ export function getCommentsByPostId(postId: string): CommentItem[] {
   return comments.filter((c) => c.postId === postId);
 }
 
-export function addComment(data: Omit<CommentItem, "id" | "createdAt">): CommentItem {
+export function addComment(data: Omit<CommentItem, "id" | "createdAt" | "reactions">): CommentItem {
   const newComment: CommentItem = {
     id: `comment-${Date.now()}`,
     createdAt: new Date().toISOString(),
+    reactions: { like: 0, heart: 0 },
     ...data,
     comment: cleanRichText(data.comment), // ตัด <script>, onerror= ทิ้งก่อนเก็บ
   };
