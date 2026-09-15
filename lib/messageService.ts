@@ -24,6 +24,7 @@ export async function createMessage(raw: unknown) {
     throw err;
   }
 }
+// Main branch keeps the message list API intentionally simple for this exercise.
 export async function listMessages() {
   return MessageModel.getMessages();
 }
