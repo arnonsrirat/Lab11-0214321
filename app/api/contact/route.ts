@@ -4,11 +4,8 @@ import { withErrorHandling } from '@/lib/withErrorHandling';
 export async function GET(request: Request) {
   const url = new URL(request.url);
   const search = url.searchParams.get('search') ?? '';
-  const all = await listMessages();
-  const filtered = search
-    ? all.filter((m) => m.name.includes(search) || m.message.includes(search))
-    : all;
-  return Response.json({ messages: filtered });
+  const messages = await listMessages(search);
+  return Response.json({ messages });
 }
 
 export const POST = withErrorHandling(async (request: Request) => {

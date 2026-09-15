@@ -24,8 +24,15 @@ export async function createMessage(raw: unknown) {
     throw err;
   }
 }
-export async function listMessages() {
-  return MessageModel.getMessages();
+export async function listMessages(search?: string) {
+  const all = await MessageModel.getMessages();
+  const term = search?.trim();
+  if (!term) return all;
+
+  return all.filter(
+    (message) =>
+      message.name.includes(term) || message.message.includes(term),
+  );
 }
 
 export async function getMessageById(id: string) {
